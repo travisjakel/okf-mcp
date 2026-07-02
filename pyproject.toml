@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "okf-mcp"
-version = "0.1.0"
+version = "0.1.1"
 description = "MCP server for Open Knowledge Format (OKF) bundles — expose okf-ingest's deterministic consume verbs (search, context, graph impact, diff, doctor) as agent tools."
 readme = "README.md"
 license = { text = "Apache-2.0" }

@@ -76,6 +76,34 @@ def test_impact_and_sql(reg):
         R.sql(reg, "DELETE FROM okf_concept")
 
 
+def test_name_resolution(reg, tmp_path):
+    # exact path, stem, title (case/punct-insensitive), and .md-less path all resolve
+    b = reg.get()
+    assert R.resolve(b, "alpha.md") == "alpha.md"
+    assert R.resolve(b, "alpha") == "alpha.md"
+    assert R.resolve(b, "ALPHA") == "alpha.md"
+    # concept-addressed tools accept names
+    assert R.get_concept(reg, "Alpha")["path"] == "alpha.md"
+    assert "alpha.md" in R.impact(reg, "Beta")["inbound"]
+    assert "beta.md" in R.context(reg, start="Alpha")["included"]
+    # normalized title match: spaces vs underscores/punctuation
+    (tmp_path / "bundle" / "multi_word_page.md").write_text(
+        "---\ntype: Note\ntitle: Multi Word — Page!\n---\n# Multi Word\n", encoding="utf-8")
+    reg.refresh()
+    assert R.resolve(reg.get(), "multi word page") == "multi_word_page.md"
+    # unknown -> helpful error; ambiguous -> lists candidates
+    with pytest.raises(ValueError, match="okf_search"):
+        R.resolve(reg.get(), "does not exist")
+    (tmp_path / "bundle" / "sub").mkdir()
+    (tmp_path / "bundle" / "sub" / "alpha2.md").write_text(
+        "---\ntype: Note\ntitle: Alpha\n---\n# A2\n", encoding="utf-8")
+    reg.refresh()
+    with pytest.raises(ValueError, match="ambiguous"):
+        R.resolve(reg.get(), "Alpha")            # two concepts titled Alpha
+    assert R.resolve(reg.get(), "alpha") == "alpha.md"   # path shortcut still wins
+    assert R.resolve(reg.get(), "alpha2") == "sub/alpha2.md"  # unique stem ok
+
+
 def test_diff_refresh_doctor(reg, tmp_path):
     assert R.diff(reg)["identical"] is True
     # mutate the source dir -> drift shows, refresh clears it

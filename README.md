@@ -51,6 +51,11 @@ Or in any MCP client config:
   accepts SELECT/WITH only. The server never writes to your bundle.
 - **Deterministic.** Every tool is plain okf-ingest code — same input, same
   answer; the only nondeterminism an agent sees is its own.
+- **Concepts resolve by name.** `okf_get_concept` / `okf_context` / `okf_impact`
+  accept a path *or* a wikilink-style name — id, alias, title, or filename stem,
+  compared on alphanumerics ('agent memory architecture' finds
+  `ops/agent_memory_architecture.md`). Ambiguous names return the candidate
+  list instead of guessing.
 - **`[[wikilinks]]` work.** Vault-style bundles (Obsidian/Logseq/Foam) resolve
   by id / alias / title / stem, same as okf-ingest 0.6.0+.
 

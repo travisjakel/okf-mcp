@@ -45,9 +45,10 @@ def okf_search(term: str, bundle: Optional[str] = None, limit: int = 20) -> list
 
 @mcp.tool()
 def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
-    """Read one concept (its frontmatter fields and full markdown body) by its
-    bundle-relative path, e.g. 'ops/backups.md'. Use after okf_search when you
-    need the actual content of a single concept."""
+    """Read one concept (its frontmatter fields and full markdown body). Accepts
+    a bundle-relative path ('ops/backups.md') OR a name — resolved like a
+    [[wikilink]] by id, alias, title, or filename stem ('agent memory
+    architecture' works). Ambiguous names return the candidates."""
     return R.get_concept(reg, path, bundle)
 
 
@@ -55,7 +56,8 @@ def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
 def okf_context(start: Optional[str] = None, depth: int = 1,
                 max_tokens: int = 8000, bundle: Optional[str] = None) -> dict:
     """Assemble a curated, index-first context blob: index.md plus the concept
-    at `start` and everything within `depth` links of it, as one markdown
+    at `start` (a path or a wikilink-style name — id/alias/title/stem all
+    resolve) and everything within `depth` links of it, as one markdown
     string (capped near `max_tokens`). This follows the links the bundle's
     author wrote — prefer it over search when you want the full neighborhood
     of a topic rather than keyword matches. Omit `start` to pack the whole
@@ -67,7 +69,8 @@ def okf_context(start: Optional[str] = None, depth: int = 1,
 def okf_impact(concept: str, bundle: Optional[str] = None) -> dict:
     """Report what links to and from a concept: outbound links, inbound links
     (backlinks), and the full transitive set of concepts reachable from it.
-    Call this to answer 'what depends on X' or 'what breaks if X changes'."""
+    Call this to answer 'what depends on X' or 'what breaks if X changes'.
+    `concept` accepts a path or a wikilink-style name (id/alias/title/stem)."""
     return R.impact(reg, concept, bundle)
 
 
