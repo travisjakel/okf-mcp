@@ -2,4 +2,4 @@
 from .registry import BundleRegistry
 
 __all__ = ["BundleRegistry"]
-__version__ = "0.1.1"
+__version__ = "0.2.0"

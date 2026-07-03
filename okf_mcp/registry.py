@@ -17,7 +17,7 @@ import duckdb
 import okf
 from okf.diff import diff as okf_diff
 from okf.doctor import doctor as okf_doctor
-from okf.graph import backlinks as okf_backlinks, impact as okf_impact
+from okf.graph import backlinks as okf_backlinks, impact as okf_impact, ppr as okf_ppr
 
 
 @dataclass
@@ -177,11 +177,22 @@ def get_concept(reg: BundleRegistry, path: str, bundle: Optional[str] = None) ->
 
 
 def context(reg: BundleRegistry, start: Optional[str] = None, depth: int = 1,
-            max_tokens: int = 8000, bundle: Optional[str] = None) -> dict:
+            max_tokens: int = 8000, bundle: Optional[str] = None,
+            rank: str = "ppr") -> dict:
     b = reg.get(bundle)
     if start is not None:
         start = resolve(b, start)
-    return okf.context(b.con, start=start, depth=depth, max_tokens=max_tokens)
+    return okf.context(b.con, start=start, depth=depth, max_tokens=max_tokens,
+                       rank=rank)
+
+
+def related(reg: BundleRegistry, concept: str, k: int = 10,
+            bundle: Optional[str] = None) -> list:
+    b = reg.get(bundle)
+    start = resolve(b, concept)
+    rows = okf_ppr(b.con, start, k=None)
+    # drop the seed and reserved hub pages (index/log) — noise for agents
+    return [r for r in rows if r["path"] != start and not r["reserved"]][:int(k)]
 
 
 def impact(reg: BundleRegistry, concept: str, bundle: Optional[str] = None) -> dict:

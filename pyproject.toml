@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "okf-mcp"
-version = "0.1.1"
+version = "0.2.0"
 description = "MCP server for Open Knowledge Format (OKF) bundles — expose okf-ingest's deterministic consume verbs (search, context, graph impact, diff, doctor) as agent tools."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Travis Jakel", email = "travis.s.jakel@gmail.com" }]
 requires-python = ">=3.10"
 dependencies = [
-    "okf-ingest>=0.7.0",
+    "okf-ingest>=0.8.0",
     "mcp>=1.2",
 ]
 keywords = ["okf", "open-knowledge-format", "mcp", "model-context-protocol", "knowledge-graph", "duckdb"]

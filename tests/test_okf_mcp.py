@@ -104,6 +104,17 @@ def test_name_resolution(reg, tmp_path):
     assert R.resolve(reg.get(), "alpha2") == "sub/alpha2.md"  # unique stem ok
 
 
+def test_related_and_ppr_context(reg):
+    rel = R.related(reg, "Beta", k=5)
+    assert rel and rel[0]["path"] != "beta.md"          # seed excluded
+    assert any(r["path"] == "alpha.md" for r in rel)     # linked neighbor ranked
+    assert rel == R.related(reg, "beta", k=5)            # deterministic + name-resolved
+    ctx = R.context(reg, start="Alpha")                  # default rank=ppr
+    assert ctx["included"][0] == "alpha.md"
+    ctx_bfs = R.context(reg, start="Alpha", rank="bfs")
+    assert set(ctx_bfs["included"]) <= set(ctx["included"]) | {"alpha.md", "sub/b.md", "beta.md"}
+
+
 def test_diff_refresh_doctor(reg, tmp_path):
     assert R.diff(reg)["identical"] is True
     # mutate the source dir -> drift shows, refresh clears it

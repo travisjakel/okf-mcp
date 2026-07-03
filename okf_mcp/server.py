@@ -54,15 +54,26 @@ def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
 
 @mcp.tool()
 def okf_context(start: Optional[str] = None, depth: int = 1,
-                max_tokens: int = 8000, bundle: Optional[str] = None) -> dict:
+                max_tokens: int = 8000, bundle: Optional[str] = None,
+                rank: str = "ppr") -> dict:
     """Assemble a curated, index-first context blob: index.md plus the concept
     at `start` (a path or a wikilink-style name — id/alias/title/stem all
-    resolve) and everything within `depth` links of it, as one markdown
-    string (capped near `max_tokens`). This follows the links the bundle's
-    author wrote — prefer it over search when you want the full neighborhood
-    of a topic rather than keyword matches. Omit `start` to pack the whole
-    bundle."""
-    return R.context(reg, start, depth, max_tokens, bundle)
+    resolve) and its most relevant neighborhood, as one markdown string
+    (capped near `max_tokens`). Selection is ranked by exact Personalized
+    PageRank over the author's link graph by default — the pages that matter
+    most to the topic fill the budget first; pass rank='bfs' for a plain
+    depth-limited neighborhood. Prefer this over search when you want the
+    full picture of a topic. Omit `start` to pack the whole bundle."""
+    return R.context(reg, start, depth, max_tokens, bundle, rank)
+
+
+@mcp.tool()
+def okf_related(concept: str, k: int = 10, bundle: Optional[str] = None) -> list[dict]:
+    """The k concepts most relevant to `concept` by link structure (exact
+    Personalized PageRank — deterministic, no embeddings, seed excluded).
+    Call to discover what else matters about a topic when keyword search
+    isn't enough; `concept` accepts a path or a wikilink-style name."""
+    return R.related(reg, concept, k, bundle)
 
 
 @mcp.tool()
