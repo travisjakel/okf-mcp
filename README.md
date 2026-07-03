@@ -14,7 +14,7 @@ all deterministic okf-ingest code, no model calls in the server.
 | `okf_list_bundles` | which bundles this server exposes |
 | `okf_search` | concepts whose title/body match a term |
 | `okf_get_concept` | one concept's frontmatter + full body |
-| `okf_context` | **the flagship** — index.md + a concept's most relevant neighborhood as one curated markdown blob, ranked by exact Personalized PageRank over the author's link graph (pass `rank='bfs'` for plain depth) |
+| `okf_context` | **the flagship** — index.md + a concept's most relevant neighborhood as one curated markdown blob, ranked by exact Personalized PageRank over the author's link graph (pass `rank='bfs'` for plain depth) — or pass `query` (a free-text question) instead of `start` for lexical-seeded multi-PPR retrieval |
 | `okf_related` | the k concepts most relevant to a topic — exact PPR, no embeddings |
 | `okf_impact` | inbound / outbound / transitive links — "what breaks if X changes" |
 | `okf_sql` | read-only SELECT over the DuckDB catalog (`okf_concept`, `okf_link`, `okf_validation`) |
@@ -25,7 +25,7 @@ all deterministic okf-ingest code, no model calls in the server.
 ## Install & run
 
 ```bash
-pip install okf-mcp        # depends on okf-ingest >= 0.8.0
+pip install okf-mcp        # depends on okf-ingest >= 0.9.0
 
 # one or more bundles: directories and/or okf-ingest .duckdb catalogs,
 # optionally named (first one is the default target)
