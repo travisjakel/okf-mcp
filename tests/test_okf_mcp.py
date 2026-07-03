@@ -115,6 +115,14 @@ def test_related_and_ppr_context(reg):
     assert set(ctx_bfs["included"]) <= set(ctx["included"]) | {"alpha.md", "sub/b.md", "beta.md"}
 
 
+def test_query_context(reg):
+    ctx = R.context(reg, query="quicksilver mentions")
+    assert "alpha.md" in ctx["included"]
+    assert "alpha.md" in ctx["seeds"]
+    with pytest.raises(ValueError, match="matched no concepts"):
+        R.context(reg, query="zzz qqq")
+
+
 def test_diff_refresh_doctor(reg, tmp_path):
     assert R.diff(reg)["identical"] is True
     # mutate the source dir -> drift shows, refresh clears it

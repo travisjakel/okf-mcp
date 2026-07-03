@@ -178,12 +178,12 @@ def get_concept(reg: BundleRegistry, path: str, bundle: Optional[str] = None) ->
 
 def context(reg: BundleRegistry, start: Optional[str] = None, depth: int = 1,
             max_tokens: int = 8000, bundle: Optional[str] = None,
-            rank: str = "ppr") -> dict:
+            rank: str = "ppr", query: Optional[str] = None) -> dict:
     b = reg.get(bundle)
     if start is not None:
         start = resolve(b, start)
     return okf.context(b.con, start=start, depth=depth, max_tokens=max_tokens,
-                       rank=rank)
+                       rank=rank, query=query)
 
 
 def related(reg: BundleRegistry, concept: str, k: int = 10,

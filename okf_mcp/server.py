@@ -55,16 +55,18 @@ def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
 @mcp.tool()
 def okf_context(start: Optional[str] = None, depth: int = 1,
                 max_tokens: int = 8000, bundle: Optional[str] = None,
-                rank: str = "ppr") -> dict:
+                rank: str = "ppr", query: Optional[str] = None) -> dict:
     """Assemble a curated, index-first context blob: index.md plus the concept
     at `start` (a path or a wikilink-style name — id/alias/title/stem all
     resolve) and its most relevant neighborhood, as one markdown string
     (capped near `max_tokens`). Selection is ranked by exact Personalized
     PageRank over the author's link graph by default — the pages that matter
     most to the topic fill the budget first; pass rank='bfs' for a plain
-    depth-limited neighborhood. Prefer this over search when you want the
-    full picture of a topic. Omit `start` to pack the whole bundle."""
-    return R.context(reg, start, depth, max_tokens, bundle, rank)
+    depth-limited neighborhood. Or pass `query` (a free-text question)
+    INSTEAD of `start`: seed concepts are chosen lexically, then ranked by
+    multi-seed PageRank — use this when you don't know which concept to
+    start from. Omit both to pack the whole bundle."""
+    return R.context(reg, start, depth, max_tokens, bundle, rank, query)
 
 
 @mcp.tool()
