@@ -138,21 +138,20 @@ def test_diff_refresh_doctor(reg, tmp_path):
 
 @pytest.mark.anyio
 async def test_mcp_handshake(tmp_path):
-    """Real MCP round-trip: server + client over in-memory streams."""
-    from mcp.shared.memory import create_connected_server_and_client_session
+    """Real MCP round-trip: v2 in-process Client against the MCPServer."""
+    from mcp.client import Client
     from okf_mcp import server as S
 
     S.reg.close()
     S.reg.bundles.clear()
     S.reg.add("test", make_bundle(tmp_path))
     try:
-        async with create_connected_server_and_client_session(
-                S.mcp._mcp_server) as session:
-            tools = await session.list_tools()
+        async with Client(S.mcp) as client:
+            tools = await client.list_tools()
             names = {t.name for t in tools.tools}
             assert {"okf_search", "okf_context", "okf_diff", "okf_doctor"} <= names
-            res = await session.call_tool("okf_search", {"term": "quicksilver"})
-            assert not res.isError
+            res = await client.call_tool("okf_search", {"term": "quicksilver"})
+            assert not res.is_error
             assert "alpha.md" in res.content[0].text
     finally:
         S.reg.close()

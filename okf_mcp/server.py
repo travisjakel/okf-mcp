@@ -18,11 +18,11 @@ import datetime
 import sys
 from typing import Optional
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
 from . import registry as R
 
-mcp = FastMCP("okf")
+mcp = MCPServer("okf")
 reg = R.BundleRegistry()
 
 
@@ -31,7 +31,8 @@ def okf_list_bundles() -> list[dict]:
     """List the knowledge bundles this server exposes (name, source, concept
     count). Call this first when unsure which bundle to target; every other
     tool takes an optional `bundle` name and defaults to the first bundle."""
-    return R.list_bundles(reg)
+    with reg.lock:
+        return R.list_bundles(reg)
 
 
 @mcp.tool()
@@ -40,7 +41,8 @@ def okf_search(term: str, bundle: Optional[str] = None, limit: int = 20) -> list
     substring). Call this to locate relevant concepts before reading them —
     returns path/type/title/description; follow up with okf_get_concept or
     okf_context on a returned path."""
-    return R.search(reg, term, bundle, limit)
+    with reg.lock:
+        return R.search(reg, term, bundle, limit)
 
 
 @mcp.tool()
@@ -49,7 +51,8 @@ def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
     a bundle-relative path ('ops/backups.md') OR a name — resolved like a
     [[wikilink]] by id, alias, title, or filename stem ('agent memory
     architecture' works). Ambiguous names return the candidates."""
-    return R.get_concept(reg, path, bundle)
+    with reg.lock:
+        return R.get_concept(reg, path, bundle)
 
 
 @mcp.tool()
@@ -66,7 +69,8 @@ def okf_context(start: Optional[str] = None, depth: int = 1,
     INSTEAD of `start`: seed concepts are chosen lexically, then ranked by
     multi-seed PageRank — use this when you don't know which concept to
     start from. Omit both to pack the whole bundle."""
-    return R.context(reg, start, depth, max_tokens, bundle, rank, query)
+    with reg.lock:
+        return R.context(reg, start, depth, max_tokens, bundle, rank, query)
 
 
 @mcp.tool()
@@ -75,7 +79,8 @@ def okf_related(concept: str, k: int = 10, bundle: Optional[str] = None) -> list
     Personalized PageRank — deterministic, no embeddings, seed excluded).
     Call to discover what else matters about a topic when keyword search
     isn't enough; `concept` accepts a path or a wikilink-style name."""
-    return R.related(reg, concept, k, bundle)
+    with reg.lock:
+        return R.related(reg, concept, k, bundle)
 
 
 @mcp.tool()
@@ -84,7 +89,8 @@ def okf_impact(concept: str, bundle: Optional[str] = None) -> dict:
     (backlinks), and the full transitive set of concepts reachable from it.
     Call this to answer 'what depends on X' or 'what breaks if X changes'.
     `concept` accepts a path or a wikilink-style name (id/alias/title/stem)."""
-    return R.impact(reg, concept, bundle)
+    with reg.lock:
+        return R.impact(reg, concept, bundle)
 
 
 @mcp.tool()
@@ -95,7 +101,8 @@ def okf_sql(query: str, bundle: Optional[str] = None) -> list[dict]:
     resolved), okf_validation (path, severity, rule, message). Use for
     structured questions the other tools don't cover, e.g. counting concepts
     by type or listing everything tagged 'x'."""
-    return R.sql(reg, query, bundle)
+    with reg.lock:
+        return R.sql(reg, query, bundle)
 
 
 @mcp.tool()
@@ -105,7 +112,8 @@ def okf_diff(bundle: Optional[str] = None) -> dict:
     type/title changes, links added/removed and newly broken/fixed. Call this
     to re-sync your understanding after files may have changed; if it shows
     changes, call okf_refresh to load them."""
-    return R.diff(reg, bundle)
+    with reg.lock:
+        return R.diff(reg, bundle)
 
 
 @mcp.tool()
@@ -113,7 +121,8 @@ def okf_refresh(bundle: Optional[str] = None) -> dict:
     """Re-ingest a directory-backed bundle so the catalog reflects the current
     files. Call after okf_diff reports changes, or when you know the bundle
     was edited since the server started."""
-    return reg.refresh(bundle)
+    with reg.lock:
+        return reg.refresh(bundle)
 
 
 @mcp.tool()
@@ -126,7 +135,8 @@ def okf_doctor(bundle: Optional[str] = None, stale_days: Optional[int] = None) -
     now = None
     if stale_days is not None:
         now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    return R.doctor(reg, bundle, stale_days, now)
+    with reg.lock:
+        return R.doctor(reg, bundle, stale_days, now)
 
 
 def main(argv: Optional[list[str]] = None) -> int:

@@ -24,8 +24,12 @@ all deterministic okf-ingest code, no model calls in the server.
 
 ## Install & run
 
+Built on the official MCP Python SDK v2 (MCP spec 2026-07-28); v2 servers
+still answer the legacy `initialize` handshake, so pre-2026 clients keep
+working. For environments pinned to SDK v1, install `okf-mcp==0.3.1`.
+
 ```bash
-pip install okf-mcp        # depends on okf-ingest >= 0.9.0
+pip install okf-mcp        # depends on okf-ingest >= 0.9.0 and mcp >= 2
 
 # one or more bundles: directories and/or okf-ingest .duckdb catalogs,
 # optionally named (first one is the default target)

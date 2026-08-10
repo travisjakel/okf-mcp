@@ -10,6 +10,7 @@ code — no model calls.
 from __future__ import annotations
 
 import os
+import threading
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -33,6 +34,9 @@ class BundleRegistry:
 
     def __init__(self) -> None:
         self.bundles: dict[str, Bundle] = {}
+        # mcp SDK v2 runs sync tool handlers on worker threads; DuckDB
+        # connections must not be hit concurrently, so tool wrappers hold this.
+        self.lock = threading.Lock()
 
     def add(self, name: str, source: str) -> Bundle:
         if name in self.bundles:
