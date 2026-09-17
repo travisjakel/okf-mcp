@@ -58,7 +58,8 @@ def okf_get_concept(path: str, bundle: Optional[str] = None) -> dict:
 @mcp.tool()
 def okf_context(start: Optional[str] = None, depth: int = 1,
                 max_tokens: int = 8000, bundle: Optional[str] = None,
-                rank: str = "ppr", query: Optional[str] = None) -> dict:
+                rank: str = "ppr", query: Optional[str] = None,
+                now: Optional[str] = None) -> dict:
     """Assemble a curated, index-first context blob: index.md plus the concept
     at `start` (a path or a wikilink-style name — id/alias/title/stem all
     resolve) and its most relevant neighborhood, as one markdown string
@@ -70,7 +71,7 @@ def okf_context(start: Optional[str] = None, depth: int = 1,
     multi-seed PageRank — use this when you don't know which concept to
     start from. Omit both to pack the whole bundle."""
     with reg.lock:
-        return R.context(reg, start, depth, max_tokens, bundle, rank, query)
+        return R.context(reg, start, depth, max_tokens, bundle, rank, query, now)
 
 
 @mcp.tool()
@@ -81,6 +82,32 @@ def okf_related(concept: str, k: int = 10, bundle: Optional[str] = None) -> list
     isn't enough; `concept` accepts a path or a wikilink-style name."""
     with reg.lock:
         return R.related(reg, concept, k, bundle)
+
+
+@mcp.tool()
+def okf_computations(bundle: Optional[str] = None) -> list[dict]:
+    """List the bundle's Attested Computations (OKF SPEC 10): the sanctioned way
+    to compute each value, with its runtime, its typed parameters, the executor
+    that runs it, the receipt fields a run must return, and the attester that
+    checks that receipt. Call this before computing a number the bundle already
+    defines -- the contract says you may supply VALUES for the declared
+    parameters and may not author or edit the computation. Returns the
+    computation text itself, so you can see exactly what is sanctioned."""
+    with reg.lock:
+        return R.computations(reg, bundle)
+
+
+@mcp.tool()
+def okf_trust(concept: Optional[str] = None, bundle: Optional[str] = None) -> list[dict]:
+    """Trust and lifecycle for concepts (OKF SPEC 5): `trust_tier` is
+    unverified / machine-confirmed / human-reviewed depending on who signed off,
+    `status` is draft/stable/deprecated, and `stale_after` is the instant past
+    which the content should be re-verified before being served. Call this to
+    decide how much weight to give a concept, or to find what has gone stale.
+    A `status` value outside the spec's vocabulary is reported in `status_raw`
+    and left out of `status` rather than guessed at."""
+    with reg.lock:
+        return R.trust(reg, bundle, concept)
 
 
 @mcp.tool()

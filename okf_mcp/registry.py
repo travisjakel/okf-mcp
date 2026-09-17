@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import threading
 from dataclasses import dataclass
+import datetime as _dt
 from typing import Any, Optional
 
 import duckdb
@@ -182,12 +183,37 @@ def get_concept(reg: BundleRegistry, path: str, bundle: Optional[str] = None) ->
 
 def context(reg: BundleRegistry, start: Optional[str] = None, depth: int = 1,
             max_tokens: int = 8000, bundle: Optional[str] = None,
-            rank: str = "ppr", query: Optional[str] = None) -> dict:
+            rank: str = "ppr", query: Optional[str] = None,
+            now: Optional[str] = None) -> dict:
     b = reg.get(bundle)
     if start is not None:
         start = resolve(b, start)
+    # `now` defaults to the wall clock so a served context blob always carries
+    # its SPEC 5.5 staleness notes. Lifecycle is annotated, never used to drop
+    # a concept (SPEC 11: surface, do not silently drop).
+    if now is None:
+        now = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     return okf.context(b.con, start=start, depth=depth, max_tokens=max_tokens,
-                       rank=rank, query=query)
+                       rank=rank, query=query, now=now)
+
+
+def computations(reg: BundleRegistry, bundle: Optional[str] = None) -> list[dict]:
+    """The bundle's SPEC 10 Attested Computation contracts, from the catalog."""
+    b = reg.get(bundle)
+    return _rows(b.con.execute(
+        "SELECT path, runtime, form, computation_path, computation, n_parameters, "
+        "parameters, executor, receipt, attester FROM okf_computation ORDER BY path"))
+
+
+def trust(reg: BundleRegistry, bundle: Optional[str] = None,
+          concept: Optional[str] = None) -> list[dict]:
+    """SPEC 5 trust tier and lifecycle per concept, from the catalog."""
+    b = reg.get(bundle)
+    q = ("SELECT path, type, title, status, status_raw, stale_after, trust_tier, "
+         "verified_at, verified_by, generated_by FROM okf_concept WHERE reserved = FALSE")
+    if concept:
+        return _rows(b.con.execute(q + " AND path = ?", [resolve(b, concept)]))
+    return _rows(b.con.execute(q + " ORDER BY path"))
 
 
 def related(reg: BundleRegistry, concept: str, k: int = 10,

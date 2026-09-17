@@ -1,6 +1,6 @@
 # okf-mcp
 
-**MCP server for [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog) bundles** — expose [okf-ingest](https://github.com/travisjakel/okf-ingest)'s deterministic consume verbs as tools any MCP client (Claude Code, Cursor, custom agents) can call.
+**MCP server for [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) bundles** — expose [okf-ingest](https://github.com/travisjakel/okf-ingest)'s deterministic consume verbs as tools any MCP client (Claude Code, Cursor, custom agents) can call.
 
 Existing OKF MCP servers hand agents the markdown *files*. This one hands them
 the **queryable catalog and concept graph**: index-first context assembly,
@@ -21,6 +21,8 @@ all deterministic okf-ingest code, no model calls in the server.
 | `okf_diff` | what changed on disk since the server loaded the bundle — an agent's memory-refresh between looks |
 | `okf_refresh` | re-ingest a directory bundle after `okf_diff` shows changes |
 | `okf_doctor` | health score + per-rule findings before trusting a bundle |
+| `okf_computations` | **OKF v0.2 SPEC 10** — the bundle's Attested Computations: the sanctioned way to compute each value, its runtime, its typed parameters, the executor, the receipt fields a run must return, and the attester that checks it. Call before computing a number the bundle already defines |
+| `okf_trust` | **OKF v0.2 SPEC 5** — trust tier (unverified / machine-confirmed / human-reviewed), lifecycle `status`, and `stale_after` per concept: how much weight to give a concept, and what has gone stale |
 
 ## Install & run
 
