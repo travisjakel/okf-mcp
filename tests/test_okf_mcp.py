@@ -161,3 +161,12 @@ async def test_mcp_handshake(tmp_path):
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+def test_version_matches_pyproject():
+    """The 0.5.0 wheel shipped with __version__ = "0.4.0": pyproject was bumped,
+    __init__ was not. Two literals, one test."""
+    import pathlib, re
+    import okf_mcp
+    py = (pathlib.Path(__file__).resolve().parents[1] / "pyproject.toml").read_text()
+    assert okf_mcp.__version__ == re.search(r'^version = "([^"]+)"', py, re.M).group(1)
